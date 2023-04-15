@@ -1,25 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import {Home} from "./pages/Home";
+import {Source} from "./pages/Source";
+import {About} from "./pages/About";
+import {Developer} from "./pages/Developer";
+import {Nav} from "./pages/Nav";
 
-function App() {
+
+import {
+  Routes,
+  Route,
+} from "react-router-dom";
+
+
+// function Users() {
+//   return (
+//     <div>
+//       <nav>
+//         <Link to="me">My Profile</Link>
+//       </nav>
+
+//       <Outlet />
+//     </div>
+//   );
+// }
+
+//
+// <BrowserRouter>
+// <Routes>
+//   <Route path="/" element={<Home />} />
+//   <Route path="users" element={<Users />}>
+//     <Route path="me" element={<OwnUserProfile />} />
+//     <Route path=":id" element={<UserProfile />} />
+//   </Route>
+// </Routes>
+// </BrowserRouter>
+
+//          <Route path="*" component={PageNotFound} />
+
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div className="App">
+        <Nav />
+        <Routes>
+          <Route path="/" element ={<Home />} />
+          <Route path="/source-code" component={<Source />} />
+          <Route path="/about" component={<About />} />
+          <Route path="/developer" component={<Developer />} />
+        </Routes>
+      </div>
   );
 }
-
-export default App;

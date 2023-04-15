@@ -1,0 +1,27 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    color : white;
+    background-color: rgb(12, 144, 196);
+    height: 65px;
+    place-items: center;
+    padding : 0 1rem;
+  }
+  
+  .navlink{
+    display: flex;
+    justify-content: space-evenly;
+    word-spacing: 10px;
+  }
+  .link{
+    text-decoration: none;
+    font-size: large;
+    font-weight: bold;
+    margin-left: 16px;
+    padding : 10px;
+    color : rgb(255, 255, 255);
+  }
+  
+  .active{
+    color : black;
+  }

@@ -1,0 +1,17 @@
+.developers {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 1.5rem;
+    padding: 3rem;
+    font-family: sans-serif;
+    background-color: rgb(234, 239, 245);
+    margin: 3.5% auto;
+    box-shadow: 15px 15px 20px #6e6969;
+    border-radius: 0.8rem;
+    font-weight: bold;
+  }
+  h4 {
+    padding: 0.6rem 2rem 0.6rem 2rem;
+  }
