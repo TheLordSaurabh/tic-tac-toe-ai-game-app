@@ -5,6 +5,7 @@ import {Source} from "./pages/Source";
 import {About} from "./pages/About";
 import {Developer} from "./pages/Developer";
 import {Nav} from "./pages/Nav";
+import {Foot} from "./pages/Foot"
 
 
 import {
@@ -38,16 +39,19 @@ import {
 
 //          <Route path="*" component={PageNotFound} />
 
-export default function App() {
+const App = () => {
   return (
       <div className="App">
         <Nav />
         <Routes>
           <Route path="/" element ={<Home />} />
-          <Route path="/source-code" component={<Source />} />
-          <Route path="/about" component={<About />} />
-          <Route path="/developer" component={<Developer />} />
+          <Route path="/source-code" element={<Source />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/developer" element={<Developer />} />
         </Routes>
+        <Foot/>
       </div>
   );
 }
+
+export default App;
