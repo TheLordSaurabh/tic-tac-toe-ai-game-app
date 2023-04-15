@@ -4,6 +4,6 @@ function openTab() {
 }
 export const Source = () => {
   openTab();
-  window.location.href = "/";
+  window.location.href = "/home";
   return <h3>Source Code Available on Next Tab </h3>;
 }
