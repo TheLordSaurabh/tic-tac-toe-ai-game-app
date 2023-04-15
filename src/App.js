@@ -11,43 +11,19 @@ import {Foot} from "./pages/Foot"
 import {
   Routes,
   Route,
+  Navigate
 } from "react-router-dom";
-
-
-// function Users() {
-//   return (
-//     <div>
-//       <nav>
-//         <Link to="me">My Profile</Link>
-//       </nav>
-
-//       <Outlet />
-//     </div>
-//   );
-// }
-
-//
-// <BrowserRouter>
-// <Routes>
-//   <Route path="/" element={<Home />} />
-//   <Route path="users" element={<Users />}>
-//     <Route path="me" element={<OwnUserProfile />} />
-//     <Route path=":id" element={<UserProfile />} />
-//   </Route>
-// </Routes>
-// </BrowserRouter>
-
-//          <Route path="*" component={PageNotFound} />
 
 const App = () => {
   return (
       <div className="App">
         <Nav />
         <Routes>
-          <Route path="/" element ={<Home />} />
+          <Route path="/home" exact element ={<Home />} />
           <Route path="/source-code" element={<Source />} />
           <Route path="/about" element={<About />} />
           <Route path="/developer" element={<Developer />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
         <Foot/>
       </div>
