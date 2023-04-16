@@ -32,10 +32,10 @@ export const Home = () => {
       this.player = player;
       this.opponent = getOpponent(this.player);
       this.alpha = ninf;
-      this.state = [...state];
+      this.state = [...state];//Deep Copy
       this.final_state = Array(9).fill(null);
       this.n = this.state.length;
-      this.createBranches();
+      this.createBranches(); //Tree is Created Here
     }
     copyArray(array1, array2) {
       for (let i = 0; i < array1.length; i++) {
@@ -110,6 +110,7 @@ export const Home = () => {
         this.alpha = this.checkWin(this.state, this.main_player);
         return this.alpha;
       }
+
       let temp = [...this.state];
       for (let i = 0; i < 9; i++) {
         //Pruning happens when current alpha is greater than the parent beta
@@ -120,6 +121,7 @@ export const Home = () => {
         if (temp[i] === null) {
           temp[i] = this.player; //Making New Move
 
+          //Best Case Scenario
           let win_ = this.checkWin(temp, this.main_player);
           if (win_ === 1) {
             this.alpha = 1;
@@ -127,12 +129,9 @@ export const Home = () => {
             temp[i] = null; //Removing the introduced Move
             return this.alpha;
           }
-          let minnode = new MinNode(
-            temp,
-            this.opponent,
-            this.main_player,
-            this.alpha
-          );
+
+          let minnode = new MinNode(temp,this.opponent,this.main_player,this.alpha);
+
           if (minnode.beta > this.alpha) {
             this.alpha = minnode.beta;
             this.final_state = [...temp];
@@ -229,6 +228,7 @@ export const Home = () => {
         this.beta = this.checkWin(this.state, this.main_player);
         return this.beta;
       }
+
       let temp = [...this.state];
       for (let i = 0; i < 9; i++) {
         //Pruning happens when current beta is less than the parent alpha or alphas of all the alpha nodes
@@ -238,6 +238,7 @@ export const Home = () => {
         //Exploring the new search trees
         if (temp[i] === null) {
           temp[i] = this.player; //Making New Move
+
           let win_ = this.checkWin(temp, this.main_player);
           if (win_ === -1) {
             this.beta = -1;
@@ -252,6 +253,7 @@ export const Home = () => {
             this.main_player,
             this.beta
           );
+
           temp[i] = null; //Removing the introduced Move
           if (maxnode.alpha < this.beta) {
             this.beta = maxnode.alpha;
@@ -368,12 +370,30 @@ export const Home = () => {
 
         //Alternating the player
         setXPlaying(!is_x_playing);
-      } else {
+      } 
+      
+      else {
         //AI's Turn
-        if (turns !== 9) {
+        if (turns !== 9 && is_x_playing === false) {
+          //Getting the current game configuration/state or tic-tac-toe board matrix
           let temp = [...board];
+
+          //Create Game Search Tree - MiniMax Algorithm (Alpha-Beta Pruning)
+          /* O (AI) is the main player here, and also the root maxnode will play on behalf of Player O
+            In Tree, Max Nodes will be player O (Computer) and Min Nodes will represent X (Human)
+          */
+          // Creating the root maxnode for the Player O (Computer) 
+          // Whole game will be monitored on behalf of main player which is O (Computer) here
+          // If in any node of the tree if O wins then node returns 1, if O lose then returns -1,
+          // If neither win/lose and there are moves to explore then it create new branch
+          // If neither win/lose and there are NO moves to explore then node will return 0
+
+
+
           let maxnode = new MaxNode(temp, "O", "O", inf);
-          const updatedBoardai = [...maxnode.final_state];
+          
+          //Accessing the best move from the decision tree
+          const updatedBoardai = [...maxnode.final_state]; 
 
           const count = turns + 1;
           setTurns(count);
