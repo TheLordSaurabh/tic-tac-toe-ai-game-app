@@ -5,7 +5,6 @@ import { NumberPlayer } from "../components/NumberPlayer";
 import { Board } from "../components/Board";
 import { RedoButton } from "../components/RedoButton";
 import { ResetAndRestart } from "../components/ResetAndRestart";
-
 export const Home = () => {
   const win_combinations = [
     [0, 1, 2],
@@ -264,7 +263,6 @@ export const Home = () => {
       return this.beta;
     }
   }
-
   const [is_x_playing, setXPlaying] = useState(true);
   const [board, setBoard] = useState(Array(9).fill(null));
   const [scores, setScores] = useState({ x_score: 0, o_score: 0 });
@@ -272,8 +270,296 @@ export const Home = () => {
   const [turns, setTurns] = useState(1);
   const [last_board, setLastBoard] = useState(Array(9).fill(null));
   const [is_one_player, setOnePlayer] = useState(false);
+  const [next, setNext] = useState(false);
 
   const mainBoardHandling = (boxIdx) => {
+    //2-Player Game
+    if (is_one_player === false) {
+      setLastBoard(board);
+      // Update the board
+      const updatedBoard = board.map((value, idx) => {
+        if (idx === boxIdx) {
+          return is_x_playing ? "X" : "O";
+        } else {
+          return value;
+        }
+      });
+
+      //Check for winner and update the score
+      let winner = checkForWinner(updatedBoard);
+
+      if (winner) {
+        if (winner === "O") {
+          let { o_score } = scores;
+          o_score += 1;
+          setScores({ ...scores, o_score });
+        } else {
+          let { x_score } = scores;
+          x_score += 1;
+          setScores({ ...scores, x_score });
+        }
+        alert(`Winner : ${winner} !! Player - ${winner} won the round!!`);
+        //if(is_one_player === true) setXPlaying(true);
+        setTimeout(nextRound(), 3000);
+        return;
+      } else {
+        //check if all boxes are filled and there is draw
+        if (turns === 9)
+          if (is_game_over === false) {
+            setTurns(1);
+            //if(is_one_player === true) setXPlaying(true);
+            setGameOver(true);
+            alert(`Tie : The Game is Draw !!`);
+            setTimeout(nextRound(), 3000);
+            return;
+          }
+      }
+
+      setBoard(updatedBoard);
+      const count = turns + 1;
+      setTurns(count);
+
+      //Alternating the player
+      setXPlaying(!is_x_playing);
+    } 
+    //1-Player Game (Human Vs AI)
+    else { //Human Vs AI Mode
+
+      if(is_game_over === false){
+        //Human (X's Turn)
+        if (is_x_playing === true) {
+          setLastBoard(board);
+          // Update the board
+          const updatedBoard = board.map((value, idx) => {
+            if (idx === boxIdx) {
+              return is_x_playing ? "X" : "O";
+            } else {
+              return value;
+            }
+          });
+
+          //Check for winner and update the score
+          let winner = checkForWinner(updatedBoard);
+          let count = turns;
+
+          if (winner) {
+            if (winner === "O") {
+              let { o_score } = scores;
+              o_score += 1;
+              setScores({ ...scores, o_score });
+            } else {
+              let { x_score } = scores;
+              x_score += 1;
+              setScores({ ...scores, x_score });
+            }
+            if(is_game_over === false)
+              alert(`Winner : ${winner} !! Player - ${winner} won the round!!`);
+            setTurns(1);
+            setGameOver(true);
+            setXPlaying(true);
+            setBoard(Array(9).fill(null));
+            setLastBoard(Array(9).fill(null));
+            setTimeout(nextRound(), 1000);
+            return;
+          } else {
+            //check if all boxes are filled and there is draw
+            if (count >= 9 && allDone(updatedBoard) ) {
+              //if (is_game_over === false)
+                setTurns(1);
+                setXPlaying(true);
+                setGameOver(true);
+                setBoard(Array(9).fill(null));
+                setLastBoard(Array(9).fill(null));
+                alert(`Tie : The Game is Draw !!`);
+                setTimeout(nextRound(), 1000);
+                return;
+              }
+          }
+          
+
+          //AI's Turn
+
+          //Getting the current game configuration/state or tic-tac-toe board matrix
+          let temp = [...updatedBoard];
+          
+          //Create Game Search Tree - MiniMax Algorithm (Alpha-Beta Pruning)
+          /* O (AI) is the main player here, and also the root maxnode will play on behalf of Player O
+            In Tree, Max Nodes will be player O (Computer) and Min Nodes will represent X (Human)
+          */
+          // Creating the root maxnode for the Player O (Computer) 
+          // Whole game will be monitored on behalf of main player which is O (Computer) here
+          // If in any node of the tree if O wins then node returns 1, if O lose then returns -1,
+          // If neither win/lose and there are moves to explore then it create new branch
+          // If neither win/lose and there are NO moves to explore then node will return 0
+
+          let maxnode = new MaxNode(temp, "O", "O", inf);
+            
+          //Accessing the best move from the decision tree
+          let updatedBoardai = [...maxnode.final_state]; 
+
+          setBoard(updatedBoardai);
+          count = count + 2;
+
+          //Alternating the player
+          setXPlaying(is_x_playing);
+          setNext(false);
+          setBoard(updatedBoardai);
+          setTurns(count);
+
+          //Check for winner and update the score
+          winner = checkForWinner(updatedBoardai);
+            if (winner) {
+              if (winner === "O") {
+                let { o_score } = scores;
+                o_score += 1;
+                setScores({ ...scores, o_score });
+              } else {
+                let { x_score } = scores;
+                x_score += 1;
+                setScores({ ...scores, x_score });
+              }
+              setGameOver(true);
+              setTurns(1);
+              setXPlaying(true);
+              if(is_game_over === false)
+              alert(`Winner : ${winner} !! Player - ${winner} won the round!!`);
+              setBoard(Array(9).fill(null));
+              setLastBoard(Array(9).fill(null));
+              
+              setTimeout(nextRound(), 1000);
+              return;
+            } else {
+              //check if all boxes are filled and there is draw
+              if (count >= 9 && allDone(updatedBoardai)) {
+                  setTurns(1);
+                  setXPlaying(true);
+                  setGameOver(true);
+                  setBoard(Array(9).fill(null));
+                  setLastBoard(Array(9).fill(null));
+                  alert(`Tie : The Game is Draw !!`);
+                  setTimeout(nextRound(), 1000);
+                  return;
+                }
+            }
+
+          }
+        }
+      }
+    };
+  
+
+  const allEmpty = () => {
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === "X" || board[i] === "O") {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const allDone = (inp_board) => {
+    for (let i = 0; i < inp_board.length; i++) {
+      if (!(inp_board[i] === "X" || inp_board[i] === "O")) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const equalArray = (array1, array2) => {
+    if (!(array1.length === array2.length)) {
+      return false;
+    }
+
+    for (let i = 0; i < array1.length; i++) {
+      if (!(array1[i] === array2[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const restartGame = () => {
+    let conf_msg = "Do you want to restart the game??";
+    if (!window.confirm(conf_msg)) {
+      return;
+    }
+    //if (is_one_player === true) setXPlaying(true);
+    setTurns(1);
+    setGameOver(false);
+    setBoard(Array(9).fill(null));
+    setLastBoard(Array(9).fill(null));
+    setScores({ x_score: 0, o_score: 0 });
+  };
+
+  const resetBoard = () => {
+    let conf_msg = "Do you want to reset the Board??";
+    if (!window.confirm(conf_msg)) {
+      return;
+    }
+    //if (is_one_player === true) setXPlaying(true);
+    setTurns(1);
+    setGameOver(false);
+    setBoard(Array(9).fill(null));
+    setLastBoard(Array(9).fill(null));
+  };
+
+  const nextRound = () => {
+    setTurns(1);
+    if (is_one_player === true) setXPlaying(true);
+    setGameOver(false);
+    setBoard(Array(9).fill(null));
+    setLastBoard(Array(9).fill(null));
+  };
+
+  const checkForWinner = (board) => {
+    for (let i = 0; i < win_combinations.length; i++) {
+      const [x, y, z] = win_combinations[i];
+      // Iterate through win conditions and check if either player satisfies them
+      if (board[x] && board[x] === board[y] && board[y] === board[z]) {
+        setTurns(1);
+        setGameOver(true);
+        return board[x];
+      }
+    }
+  };
+  const redo = () => {
+    if (!equalArray(board, last_board)) {
+      setTurns(turns - (is_one_player ? 2 : 1));
+      setBoard(last_board);
+      if (is_one_player === false) {
+        setOnePlayer(is_one_player);
+        if (!allEmpty()) setXPlaying(!is_x_playing);
+      }
+    }
+  };
+
+  const changeMode = () => {
+    setXPlaying(true);
+    setOnePlayer(!is_one_player);
+    restartGame();
+  };
+  return (
+    <div className="Home">
+      <ScoreBoard scores={scores} is_x_playing={is_x_playing} />
+      <NumberPlayer mode={is_one_player} changeMode={changeMode} />
+      <Board
+        board={board}
+        one_player = {is_one_player}
+        x_playing = {is_x_playing}
+        game_over = {is_game_over}
+        next_ = {next}
+        onClick={is_game_over ? resetBoard : mainBoardHandling}
+      />
+      <RedoButton redo={redo} />
+      <ResetAndRestart resetBoard={resetBoard} restartGame={restartGame} />
+    </div>
+  );
+}
+
+
+/*
+const mainBoardHandling = (boxIdx) => {
     //2-Player Game
     if (is_one_player === false) {
       setLastBoard(board);
@@ -322,84 +608,24 @@ export const Home = () => {
 
       //Alternating the player
       setXPlaying(!is_x_playing);
-    } else {
-      if (is_x_playing === true) {
-        setLastBoard(board);
-        // Update the board
-        const updatedBoard = board.map((value, idx) => {
-          if (idx === boxIdx) {
-            return is_x_playing ? "X" : "O";
-          } else {
-            return value;
-          }
-        });
-
-        //Check for winner and update the score
-        let winner = checkForWinner(updatedBoard);
-
-        if (winner) {
-          if (winner === "O") {
-            let { o_score } = scores;
-            o_score += 1;
-            setScores({ ...scores, o_score });
-          } else {
-            let { x_score } = scores;
-            x_score += 1;
-            setScores({ ...scores, x_score });
-          }
-          alert(`Player - ${winner} won the round ;)`);
-          setXPlaying(true);
-          setTimeout(nextRound(), 1000);
-          return;
-        } else {
-          //check if all boxes are filled and there is draw
-          if (turns === 9)
-            if (is_game_over === false) {
-              setTurns(1);
-              setXPlaying(true);
-              setGameOver(true);
-              alert(`Draw :0`);
-              setTimeout(nextRound(), 1000);
-              return;
+    } 
+    //1-Player Game (Human Vs AI)
+    else {
+      if(is_game_over === false){
+        //Human (X's Turn)
+        if (is_x_playing === true  ) {
+          setLastBoard(board);
+          // Update the board
+          const updatedBoard = board.map((value, idx) => {
+            if (idx === boxIdx) {
+              return is_x_playing ? "X" : "O";
+            } else {
+              return value;
             }
-        }
-
-        setBoard(updatedBoard);
-        const count = turns + 1;
-        setTurns(count);
-
-        //Alternating the player
-        setXPlaying(!is_x_playing);
-      } 
-      
-      else {
-        //AI's Turn
-        if (turns !== 9 && is_x_playing === false) {
-          //Getting the current game configuration/state or tic-tac-toe board matrix
-          let temp = [...board];
-
-          //Create Game Search Tree - MiniMax Algorithm (Alpha-Beta Pruning)
-          /* O (AI) is the main player here, and also the root maxnode will play on behalf of Player O
-            In Tree, Max Nodes will be player O (Computer) and Min Nodes will represent X (Human)
-          */
-          // Creating the root maxnode for the Player O (Computer) 
-          // Whole game will be monitored on behalf of main player which is O (Computer) here
-          // If in any node of the tree if O wins then node returns 1, if O lose then returns -1,
-          // If neither win/lose and there are moves to explore then it create new branch
-          // If neither win/lose and there are NO moves to explore then node will return 0
-
-
-
-          let maxnode = new MaxNode(temp, "O", "O", inf);
-          
-          //Accessing the best move from the decision tree
-          const updatedBoardai = [...maxnode.final_state]; 
-
-          const count = turns + 1;
-          setTurns(count);
+          });
 
           //Check for winner and update the score
-          const winner = checkForWinner(updatedBoardai);
+          let winner = checkForWinner(updatedBoard);
 
           if (winner) {
             if (winner === "O") {
@@ -411,8 +637,13 @@ export const Home = () => {
               x_score += 1;
               setScores({ ...scores, x_score });
             }
-            alert(`Player - ${winner} won the round ;)`);
+            if(is_game_over === false)
+              alert(`Player - ${winner} won the round ;) XX`);
+            setTurns(1);
+            setGameOver(true);
             setXPlaying(true);
+            setBoard(Array(9).fill(null));
+            setLastBoard(Array(9).fill(null));
             setTimeout(nextRound(), 1000);
             return;
           } else {
@@ -422,116 +653,98 @@ export const Home = () => {
                 setTurns(1);
                 setXPlaying(true);
                 setGameOver(true);
-                alert(`Draw :0AI`);
+                setBoard(Array(9).fill(null));
+                setLastBoard(Array(9).fill(null));
+                alert(`Draw :0`);
                 setTimeout(nextRound(), 1000);
                 return;
               }
           }
 
-          setBoard(updatedBoardai);
-
-          setTurns(turns + 1);
+          setBoard(updatedBoard);
+          const count = turns + 1;
+          setTurns(count);
 
           //Alternating the player
           setXPlaying(!is_x_playing);
+
+          setNext(true);
+        } 
+        
+        else {
+          //AI's Turn
+          if (turns !== 9 && is_x_playing === false && next === true) {
+            //Getting the current game configuration/state or tic-tac-toe board matrix
+            let temp = [...board];
+
+            //Create Game Search Tree - MiniMax Algorithm (Alpha-Beta Pruning)
+            /* O (AI) is the main player here, and also the root maxnode will play on behalf of Player O
+              In Tree, Max Nodes will be player O (Computer) and Min Nodes will represent X (Human)
+            */
+            // Creating the root maxnode for the Player O (Computer) 
+            // Whole game will be monitored on behalf of main player which is O (Computer) here
+            // If in any node of the tree if O wins then node returns 1, if O lose then returns -1,
+            // If neither win/lose and there are moves to explore then it create new branch
+            // If neither win/lose and there are NO moves to explore then node will return 0
+
+/*
+
+            let maxnode = new MaxNode(temp, "O", "O", inf);
+            
+            //Accessing the best move from the decision tree
+            const updatedBoardai = [...maxnode.final_state]; 
+
+            const count = turns + 1;
+            setTurns(count);
+            //Check for winner and update the score
+            const winner = checkForWinner(updatedBoardai);
+            setNext(false);
+            if (winner) {
+              if (winner === "O") {
+                let { o_score } = scores;
+                o_score += 1;
+                setScores({ ...scores, o_score });
+              } else {
+                let { x_score } = scores;
+                x_score += 1;
+                setScores({ ...scores, x_score });
+              }
+              setGameOver(true);
+              setTurns(1);
+              setXPlaying(true);
+              if(is_game_over === false && is_x_playing === false && !isEmpty(board) ){
+                alert(`Player - ${winner} won the round ;)OO`+board.toString());
+              }
+              setBoard(Array(9).fill(null));
+              setLastBoard(Array(9).fill(null));
+              
+              setTimeout(nextRound(), 1000);
+              return;
+            } else {
+              //check if all boxes are filled and there is draw
+              if (turns === 9)
+                if (is_game_over === false) {
+                  setTurns(1);
+                  setXPlaying(true);
+                  setGameOver(true);
+                  setBoard(Array(9).fill(null));
+                  setLastBoard(Array(9).fill(null));
+                  alert(`Draw :0AI`);
+                  setTimeout(nextRound(), 1000);
+                  return;
+                }
+            }
+
+            setBoard(updatedBoardai);
+            setTurns(turns + 1);
+
+            //Alternating the player
+            setXPlaying(!is_x_playing);
+            
+          }
         }
       }
     }
   };
 
-  const allEmpty = () => {
-    for (let i = 0; i < board.length; i++) {
-      if (board[i] === "X" || board[i] === "O") {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const equalArray = (array1, array2) => {
-    if (!(array1.length === array2.length)) {
-      return false;
-    }
-
-    for (let i = 0; i < array1.length; i++) {
-      if (!(array1[i] === array2[i])) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const restartGame = () => {
-    let conf_msg = "Do you want to restart the game??";
-    if (!window.confirm(conf_msg)) {
-      return;
-    }
-    if (is_one_player === true) setXPlaying(true);
-    setTurns(1);
-    setGameOver(false);
-    setBoard(Array(9).fill(null));
-    setLastBoard(Array(9).fill(null));
-    setScores({ x_score: 0, o_score: 0 });
-  };
-
-  const resetBoard = () => {
-    let conf_msg = "Do you want to reset the Board??";
-    if (!window.confirm(conf_msg)) {
-      return;
-    }
-    if (is_one_player === true) setXPlaying(true);
-    setTurns(1);
-    setGameOver(false);
-    setBoard(Array(9).fill(null));
-    setLastBoard(Array(9).fill(null));
-  };
-
-  const nextRound = () => {
-    setTurns(1);
-    if (is_one_player === true) setXPlaying(true);
-    setGameOver(false);
-    setBoard(Array(9).fill(null));
-    setLastBoard(Array(9).fill(null));
-  };
-
-  const checkForWinner = (board) => {
-    for (let i = 0; i < win_combinations.length; i++) {
-      const [x, y, z] = win_combinations[i];
-      // Iterate through win conditions and check if either player satisfies them
-      if (board[x] && board[x] === board[y] && board[y] === board[z]) {
-        setTurns(1);
-        setGameOver(true);
-        return board[x];
-      }
-    }
-  };
-  const redo = () => {
-    if (!equalArray(board, last_board)) {
-      setTurns(turns - (is_one_player ? 2 : 1));
-      setBoard(last_board);
-      if (is_one_player === false) {
-        setOnePlayer(is_one_player);
-        if (!allEmpty()) setXPlaying(!is_x_playing);
-      }
-    }
-  };
-
-  const changeMode = () => {
-    setXPlaying(true);
-    setOnePlayer(!is_one_player);
-    restartGame();
-  };
-
-  return (
-    <div className="Home">
-      <ScoreBoard scores={scores} is_x_playing={is_x_playing} />
-      <NumberPlayer mode={is_one_player} changeMode={changeMode} />
-      <Board
-        board={board}
-        onClick={is_game_over ? resetBoard : mainBoardHandling}
-      />
-      <RedoButton redo={redo} />
-      <ResetAndRestart resetBoard={resetBoard} restartGame={restartGame} />
-    </div>
-  );
-}
+*/
