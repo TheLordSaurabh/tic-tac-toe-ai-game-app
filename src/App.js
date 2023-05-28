@@ -19,11 +19,11 @@ const App = () => {
       <div className="App">
         <Nav />
         <Routes>
-          <Route path="/home" exact element ={<Home />} />
+          <Route path="/" exact element ={<Home />} />
           <Route path="/source-code" element={<Source />} />
           <Route path="/about" element={<About />} />
           <Route path="/developer" element={<Developer />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Foot/>
       </div>

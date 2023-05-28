@@ -5,5 +5,5 @@ function openTab() {
 }
 export const Source = () => {
   openTab();
-  return <Navigate to="/home" replace />;
+  return <Navigate to="/" replace />;
 }
